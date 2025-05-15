@@ -16,5 +16,12 @@ router.get("/profile",authenticate,accessProfile)
 router.get("/profile/points",authenticate,getPointsForUser)
 router.post("/logout",LogOut)
 
+router.post("/token", (req, res) => {
+    const token = req.headers.authorization;
+
+    console.log(token)
+    res.send({ status: "success", payload: token })
+})
+
 
 export default router

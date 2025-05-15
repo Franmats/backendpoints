@@ -49,7 +49,7 @@ export const authToken = (req, res, next) => {
     })
 }
 
-export const authTokenCookie = (token) => {
+export const authTokenHeader = (token) => {
 
     const verify = jwt.verify(token, PRIVATE_KEY)
     console.log(verify)

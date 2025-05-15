@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express()
-app.use(cors({credentials: true,methods:["GET","POST","PUT","DELETE"],allowedHeaders: ['Content-Type', 'Authorization'], origin: "https://router.sgilibra.com:9443/"}))
+app.use(cors({credentials: true,methods:["GET","POST","PUT","DELETE"],allowedHeaders: ['Content-Type', 'Authorization'], origin: "http://localhost:5173"}))
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
 app.use(cookieParser());

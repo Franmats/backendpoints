@@ -1,4 +1,4 @@
-import { generateToken,authToken, isValidPassword, createHash, resetAuth, authTokenCookie, putPointsOnHistory } from "../utils.js";
+import { generateToken,authToken, isValidPassword, createHash, resetAuth, putPointsOnHistory, authTokenHeader } from "../utils.js";
 import { usersService } from "../DAO/repository/index.js";
 import config from "../config/config.js";
 
@@ -6,41 +6,49 @@ import config from "../config/config.js";
 
 //MIDLEWARE SEGURIDAD
 export const authenticate = async(req,res,next)=> {
-    const token = req.cookies.accessToken;
+    const authHeader = req.headers.authorization;
+
     req.session = {user:null}
 
-    if (!token) {
-        return res.status(401).json({ status: 'No ha iniciado sesion' });
-    }
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "No autorizado" });
+     }
+
+     const token = authHeader.split(" ")[1];
     try {
-        const decoded = authTokenCookie(token);
-        if (!decoded) {
+        const decoded = authTokenHeader(token);
+        if (!decoded || !decoded.user) {
             return res.status(403).json({ status: 'Acceso no autorizado' });
         }      
         req.session.user = decoded.user;
         next();
     } catch (error) {
         console.log(error)
+        return res.status(403).json({ message: "Fallo en la autenticacion" });
     }
 
 }
 
 //MIDLEWARE DE ESTADO DEL USUARIO
 export const auth = async(req,res)=> {
-    const token = req.cookies.accessToken;
+   const authHeader = req.headers.authorization;
+
     req.session = {user:null}
 
-    if (!token) {
-        return res.status(401).json({ status: 'No ha iniciado sesion' });
-    }
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "No autorizado" });
+     }
+
+      const token = authHeader.split(" ")[1];
     try {
-        const decoded = authTokenCookie(token);
-        if (!decoded) {
+        const decoded = authTokenHeader(token);
+        if (!decoded || !decoded.user) {
             return res.status(403).json({ status: 'Acceso no autorizado' });
-        }      
+        }          
         res.send({status:"success", payload:[]})
     } catch (error) {
         console.log(error)
+        return res.status(403).json({ message: "Fallo en la autenticacion" });
     }
 
 }
@@ -158,13 +166,7 @@ export const loginJWT = async(req,res) => {
     const token = generateToken(userfilter)
 
     try {
-        res.cookie('accessToken', token, {
-      httpOnly: true,       // ⚠️ hace que no sea accesible desde JS en el frontend
-      secure: true,         // ⚠️ necesario si estás usando HTTPS (por ejemplo, en Vercel)
-      sameSite: "strict",     // ⚠️ necesario si el frontend está en otro dominio
-        path: "/",
-      maxAge: 60 * 60 * 1000 // 1 hora
-    }).json({ status: 'success'});
+       res.json({ status: 'success',payload: {token}});
         
     } catch (error) {
         res.json({ status: 'Error 505',payload:[]});
